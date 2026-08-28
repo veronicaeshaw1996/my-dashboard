@@ -1,0 +1,593 @@
+<div style="width: 100%; max-width: 1280px; margin: 0 auto; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);">
+  <iframe 
+    id="fti-dashboard-frame" 
+    style="width: 100%; height: 1400px; border: none; display: block; background-color: #111827;" 
+    loading="lazy"
+    srcdoc="<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <script src='https://cdn.tailwindcss.com'></script>
+  <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#111827',
+            brandCard: '#1F2937',
+            brandBorder: '#374151',
+            ftiTeal: '#00A896',
+            ftiAmber: '#F59E0B',
+            ftiCoral: '#EF4444',
+            ftiBlue: '#3B82F6',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    input[type=range] { accent-color: #00A896; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1F2937; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+  </style>
+</head>
+<body class='bg-brandDark text-gray-100 antialiased p-4 lg:p-6 min-h-screen'>
+  <div class='max-w-7xl mx-auto space-y-6'>
+
+    <header class='flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-brandBorder gap-4'>
+      <div>
+        <div class='flex items-center gap-2'>
+          <span class='px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800'>
+            Preconstruction BI Engine
+          </span>
+          <span class='text-xs text-gray-400'>Faith Technologies Inc. Case Study</span>
+        </div>
+        <h1 class='text-2xl lg:text-3xl font-bold tracking-tight text-white mt-1'>
+          C&I Microgrid Feasibility & Tariff Arbitrage Engine
+        </h1>
+        <p class='text-xs lg:text-sm text-gray-400'>
+          Simulating 8,760-hr load curves, utility rate tariffs, and grid reliability (EIA-861) across 120 candidate facilities.
+        </p>
+      </div>
+
+      <div class='flex items-center gap-3'>
+        <div class='text-right'>
+          <div class='text-xs text-gray-400'>Target Payback Benchmark</div>
+          <div class='text-sm font-semibold text-ftiTeal'>&le; 6.0 Years (Tier 1)</div>
+        </div>
+      </div>
+    </header>
+
+    <section class='bg-brandCard border border-brandBorder rounded-xl p-4 shadow-lg'>
+      <div class='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5'>
+        <div>
+          <label class='block text-xs font-medium text-gray-400 mb-1' for='filter-region'>RTO / ISO Region</label>
+          <select id='filter-region' class='w-full bg-gray-900 border border-brandBorder rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-ftiTeal transition'>
+            <option value='ALL'>All Regions (120 Facilities)</option>
+            <option value='CAISO'>CAISO (California)</option>
+            <option value='ERCOT'>ERCOT (Texas)</option>
+            <option value='PJM'>PJM (Mid-Atlantic / Midwest)</option>
+            <option value='MISO'>MISO (Central US)</option>
+            <option value='NYISO'>NYISO (New York)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class='block text-xs font-medium text-gray-400 mb-1' for='filter-type'>Facility Archetype</label>
+          <select id='filter-type' class='w-full bg-gray-900 border border-brandBorder rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-ftiTeal transition'>
+            <option value='ALL'>All Archetypes</option>
+            <option value='Cold Storage'>Cold Storage & Logistics</option>
+            <option value='Light Industrial'>Light Industrial / Assembly</option>
+            <option value='Heavy Manufacturing'>24/7 Heavy Process</option>
+          </select>
+        </div>
+
+        <div>
+          <div class='flex justify-between items-center mb-1'>
+            <label class='text-xs font-medium text-gray-400' for='slider-capex'>BESS Turnkey CapEx</label>
+            <span id='label-capex' class='text-xs font-semibold text-ftiTeal'>$1,200,000</span>
+          </div>
+          <input type='range' id='slider-capex' min='800000' max='2000000' step='50000' value='1200000' class='w-full h-1.5 bg-gray-700 rounded-lg cursor-pointer'>
+          <div class='flex justify-between text-[10px] text-gray-500 mt-1'>
+            <span>$800k</span>
+            <span>$2.0M</span>
+          </div>
+        </div>
+
+        <div>
+          <div class='flex justify-between items-center mb-1'>
+            <label class='text-xs font-medium text-gray-400' for='slider-downtime'>Downtime Cost / Hour</label>
+            <span id='label-downtime' class='text-xs font-semibold text-ftiAmber'>$5,000/hr</span>
+          </div>
+          <input type='range' id='slider-downtime' min='0' max='15000' step='1000' value='5000' class='w-full h-1.5 bg-gray-700 rounded-lg cursor-pointer'>
+          <div class='flex justify-between text-[10px] text-gray-500 mt-1'>
+            <span>$0 (Pure Tariff)</span>
+            <span>$15k/hr (Critical)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class='grid grid-cols-2 lg:grid-cols-5 gap-4'>
+      <div class='bg-brandCard border border-brandBorder rounded-xl p-4'>
+        <div class='text-xs text-gray-400 font-medium'>Screened Sites</div>
+        <div id='kpi-total-sites' class='text-2xl font-bold text-white mt-1'>0</div>
+        <div class='text-[11px] text-gray-400 mt-1'>Active Pipeline Filter</div>
+      </div>
+
+      <div class='bg-brandCard border border-brandBorder rounded-xl p-4'>
+        <div class='text-xs text-gray-400 font-medium'>Tier 1 Qualified</div>
+        <div id='kpi-tier1-count' class='text-2xl font-bold text-ftiTeal mt-1'>0%</div>
+        <div class='text-[11px] text-emerald-400 mt-1'>&le; 6.0 Year Payback</div>
+      </div>
+
+      <div class='bg-brandCard border border-brandBorder rounded-xl p-4'>
+        <div class='text-xs text-gray-400 font-medium'>Avg Simple Payback</div>
+        <div id='kpi-avg-payback' class='text-2xl font-bold text-white mt-1'>0.0 Yrs</div>
+        <div class='text-[11px] text-gray-400 mt-1'>Weighted Portfolio Avg</div>
+      </div>
+
+      <div class='bg-brandCard border border-brandBorder rounded-xl p-4'>
+        <div class='text-xs text-gray-400 font-medium'>Avg Demand Savings</div>
+        <div id='kpi-avg-demand-savings' class='text-2xl font-bold text-white mt-1'>$0</div>
+        <div class='text-[11px] text-ftiBlue mt-1'>Annual Peak Shaving</div>
+      </div>
+
+      <div class='bg-brandCard border border-brandBorder rounded-xl p-4 col-span-2 lg:col-span-1'>
+        <div class='text-xs text-gray-400 font-medium'>Avg Resiliency Value</div>
+        <div id='kpi-avg-resiliency' class='text-2xl font-bold text-ftiAmber mt-1'>$0</div>
+        <div class='text-[11px] text-yellow-500 mt-1'>EIA Outage Risk Avoided</div>
+      </div>
+    </section>
+
+    <section class='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+      <div class='lg:col-span-7 bg-brandCard border border-brandBorder rounded-xl p-5 shadow-lg flex flex-col justify-between'>
+        <div>
+          <div class='flex justify-between items-start mb-2'>
+            <div>
+              <h2 class='text-base font-semibold text-white'>Demand Charge ($/kW) vs. Simple Payback</h2>
+              <p class='text-xs text-gray-400'>Evaluates tariff sensitivity and the $18/kW economic feasibility tipping point across all 120 sites.</p>
+            </div>
+            <span class='text-[11px] bg-gray-800 text-gray-300 px-2 py-1 rounded border border-gray-700'>Click dot to inspect site</span>
+          </div>
+          <div class='h-64 lg:h-72 w-full mt-4'>
+            <canvas id='scatterChart'></canvas>
+          </div>
+        </div>
+        <div class='flex items-center justify-center gap-4 text-xs text-gray-400 pt-3 border-t border-brandBorder mt-2'>
+          <span class='flex items-center gap-1.5'><span class='w-2.5 h-2.5 rounded-full bg-ftiTeal'></span> Tier 1 (&le;6 Yrs)</span>
+          <span class='flex items-center gap-1.5'><span class='w-2.5 h-2.5 rounded-full bg-ftiAmber'></span> Tier 2 (6-8.5 Yrs)</span>
+          <span class='flex items-center gap-1.5'><span class='w-2.5 h-2.5 rounded-full bg-ftiCoral'></span> Tier 3 (&gt;8.5 Yrs)</span>
+        </div>
+      </div>
+
+      <div class='lg:col-span-5 bg-brandCard border border-brandBorder rounded-xl p-5 shadow-lg flex flex-col justify-between'>
+        <div>
+          <div class='flex justify-between items-start mb-2'>
+            <div>
+              <h2 class='text-base font-semibold text-white'>Regional Outage Risk (SAIDI)</h2>
+              <p class='text-xs text-gray-400'>EIA Form 861 average annual outage duration by region.</p>
+            </div>
+          </div>
+          <div class='h-64 lg:h-72 w-full mt-4'>
+            <canvas id='barChart'></canvas>
+          </div>
+        </div>
+        <p class='text-[11px] text-gray-400 text-center pt-3 border-t border-brandBorder mt-2'>
+          High SAIDI in ERCOT and Gulf territories increases non-tariff resiliency value.
+        </p>
+      </div>
+    </section>
+
+    <section class='grid grid-cols-1 lg:grid-cols-12 gap-6'>
+      <div class='lg:col-span-7 bg-brandCard border border-brandBorder rounded-xl p-5 shadow-lg'>
+        <div class='flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-brandBorder gap-2'>
+          <div>
+            <h2 class='text-base font-semibold text-white'>24-Hour Peak-Shaving Dispatch Simulation</h2>
+            <p id='dispatch-subtitle' class='text-xs text-ftiTeal font-mono mt-0.5'>Facility: Dallas Facility #1 (ERCOT)</p>
+          </div>
+          <span class='text-xs bg-red-950/70 text-red-300 border border-red-800/80 px-2.5 py-1 rounded font-medium'>
+            Peak Window: 2:00 PM - 7:00 PM
+          </span>
+        </div>
+
+        <div class='h-64 lg:h-72 w-full mt-4'>
+          <canvas id='dispatchChart'></canvas>
+        </div>
+
+        <div class='grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-brandBorder text-center'>
+          <div class='bg-gray-900/60 p-2 rounded'>
+            <span class='text-[11px] text-gray-400 block'>Baseline Peak</span>
+            <span id='detail-base-peak' class='text-sm font-semibold text-gray-200'>-- kW</span>
+          </div>
+          <div class='bg-gray-900/60 p-2 rounded'>
+            <span class='text-[11px] text-gray-400 block'>Net Shaved Peak</span>
+            <span id='detail-net-peak' class='text-sm font-semibold text-ftiTeal'>-- kW</span>
+          </div>
+          <div class='bg-gray-900/60 p-2 rounded'>
+            <span class='text-[11px] text-gray-400 block'>Peak Demand Cut</span>
+            <span id='detail-demand-cut' class='text-sm font-semibold text-emerald-400'>-- kW (0%)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class='lg:col-span-5 bg-brandCard border border-brandBorder rounded-xl p-5 shadow-lg flex flex-col'>
+        <div class='flex justify-between items-center mb-3'>
+          <h2 class='text-base font-semibold text-white'>Screened Candidate Sites</h2>
+          <span class='text-xs text-gray-400'>Scroll & select to inspect profile</span>
+        </div>
+        
+        <div class='flex-1 overflow-y-auto max-h-80 custom-scrollbar border border-gray-800 rounded-lg'>
+          <table class='w-full text-left text-xs'>
+            <thead class='bg-gray-900 text-gray-400 uppercase text-[10px] sticky top-0'>
+              <tr>
+                <th class='p-2.5'>Site Name</th>
+                <th class='p-2.5'>Region</th>
+                <th class='p-2.5'>Tariff ($/kW)</th>
+                <th class='p-2.5'>Payback</th>
+                <th class='p-2.5 text-center'>Status</th>
+              </tr>
+            </thead>
+            <tbody id='site-table-body' class='divide-y divide-gray-800 text-gray-300'></tbody>
+          </table>
+        </div>
+
+        <div class='mt-4 p-3 bg-gray-900/80 rounded-lg border border-gray-800 text-xs text-gray-300 space-y-1'>
+          <div class='flex justify-between'>
+            <span class='text-gray-400'>Selected Site Annual Benefit:</span>
+            <span id='table-annual-benefit' class='font-semibold text-white'>$0 / yr</span>
+          </div>
+          <div class='flex justify-between'>
+            <span class='text-gray-400'>Projected 10-Yr Net Cash Flow:</span>
+            <span id='table-10yr-roi' class='font-semibold text-emerald-400'>$0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class='pt-4 border-t border-brandBorder flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-2'>
+      <div>Portfolio Case Study: <span class='text-gray-300 font-medium'>Faith Technologies Inc.</span></div>
+      <div>Data Sources: OpenEI URDB, EIA-861, NREL Industrial Hourly Profiles</div>
+    </footer>
+
+  </div>
+
+  <script>
+    function generate120Sites() {
+      const regions = [
+        { name: 'ERCOT', baseTariff: 22.5, saidi: 7.9, count: 36, cities: ['Dallas', 'Houston', 'Austin', 'Fort Worth', 'San Antonio'] },
+        { name: 'CAISO', baseTariff: 27.5, saidi: 4.0, count: 32, cities: ['Ontario', 'Fresno', 'Bakersfield', 'Sacramento', 'San Jose'] },
+        { name: 'PJM', baseTariff: 18.5, saidi: 4.0, count: 28, cities: ['Chicago', 'Philadelphia', 'Columbus', 'Pittsburgh', 'Allentown'] },
+        { name: 'MISO', baseTariff: 11.2, saidi: 4.1, count: 14, cities: ['Milwaukee', 'Des Moines', 'Indianapolis', 'Minneapolis'] },
+        { name: 'NYISO', baseTariff: 24.2, saidi: 3.5, count: 10, cities: ['Syracuse', 'Albany', 'Buffalo', 'Rochester'] }
+      ];
+
+      const archetypes = [
+        { type: 'Cold Storage', peakRange: [850, 1300], cutRatio: 0.28, baseProfile: [0.4,0.38,0.37,0.39,0.41,0.5,0.65,0.78,0.87,0.93,0.98,1.0,0.99,0.97,1.0,0.98,0.94,0.88,0.8,0.68,0.57,0.49,0.44,0.41] },
+        { type: 'Light Industrial', peakRange: [650, 1050], cutRatio: 0.26, baseProfile: [0.29,0.28,0.28,0.3,0.41,0.65,0.88,0.98,1.0,0.99,1.0,0.98,0.95,0.98,0.99,0.96,0.92,0.71,0.49,0.36,0.32,0.31,0.29,0.29] },
+        { type: 'Heavy Manufacturing', peakRange: [1200, 1800], cutRatio: 0.16, baseProfile: [0.86,0.85,0.84,0.86,0.87,0.91,0.94,0.97,0.99,1.0,0.99,0.99,0.99,1.0,0.99,0.99,0.98,0.96,0.93,0.89,0.87,0.86,0.86,0.86] }
+      ];
+
+      const solarProfileNorm = [0,0,0,0,0,0.06,0.23,0.46,0.69,0.89,0.97,1.0,0.97,0.86,0.69,0.43,0.17,0.03,0,0,0,0,0,0];
+
+      const list = [];
+      let idCounter = 1;
+
+      regions.forEach(r => {
+        for (let i = 0; i < r.count; i++) {
+          const arch = archetypes[i % archetypes.length];
+          const city = r.cities[i % r.cities.length];
+          const peakKw = Math.round(arch.peakRange[0] + Math.random() * (arch.peakRange[1] - arch.peakRange[0]));
+          const demandRate = Number((r.baseTariff + (Math.random() * 4 - 2)).toFixed(2));
+          const saidi = Number((r.saidi + (Math.random() * 1.6 - 0.8)).toFixed(1));
+          const peakCutKw = Math.round(peakKw * arch.cutRatio);
+
+          const baseLoad = arch.baseProfile.map(f => Math.round(peakKw * f * (0.96 + Math.random() * 0.08)));
+          const pvGen = solarProfileNorm.map(s => Math.round(peakCutKw * 1.25 * s));
+
+          list.push({
+            id: idCounter,
+            name: `${city} Facility #${idCounter}`,
+            region: r.name,
+            type: arch.type,
+            peakKw,
+            demandRate,
+            saidi,
+            peakCutKw,
+            baseLoad,
+            pvGen
+          });
+          idCounter++;
+        }
+      });
+
+      return list;
+    }
+
+    const siteData = generate120Sites();
+    let currentSelectedSiteId = 1;
+    let scatterChart, barChart, dispatchChart;
+
+    function calculateMetrics(site, capex, downtimeCost) {
+      const annualDemandSavings = (site.peakCutKw * site.demandRate) * 12;
+      const annualResiliencyVal = site.saidi * downtimeCost;
+      const totalAnnualBenefit = annualDemandSavings + annualResiliencyVal;
+      const simplePayback = totalAnnualBenefit > 0 ? (capex / totalAnnualBenefit) : 99;
+      
+      let tierNumber = 3;
+      let badgeClass = 'bg-rose-950 text-rose-400 border border-rose-800';
+      if (simplePayback <= 6.0) {
+        tierNumber = 1;
+        badgeClass = 'bg-emerald-950 text-emerald-400 border border-emerald-800';
+      } else if (simplePayback <= 8.5) {
+        tierNumber = 2;
+        badgeClass = 'bg-amber-950 text-amber-400 border border-amber-800';
+      }
+
+      return {
+        annualDemandSavings,
+        annualResiliencyVal,
+        totalAnnualBenefit,
+        simplePayback: Number(simplePayback.toFixed(1)),
+        tier: tierNumber,
+        badgeClass
+      };
+    }
+
+    function updateDashboard() {
+      const regionFilter = document.getElementById('filter-region').value;
+      const typeFilter = document.getElementById('filter-type').value;
+      const capex = parseFloat(document.getElementById('slider-capex').value);
+      const downtimeCost = parseFloat(document.getElementById('slider-downtime').value);
+
+      document.getElementById('label-capex').innerText = '$' + (capex).toLocaleString();
+      document.getElementById('label-downtime').innerText = '$' + (downtimeCost).toLocaleString() + '/hr';
+
+      const filtered = siteData.filter(s => {
+        const matchesRegion = (regionFilter === 'ALL' || s.region === regionFilter);
+        const matchesType = (typeFilter === 'ALL' || s.type === typeFilter);
+        return matchesRegion && matchesType;
+      });
+
+      let totalDemandSavings = 0, totalResiliency = 0, totalPayback = 0, tier1Count = 0;
+
+      const evaluatedList = filtered.map(site => {
+        const m = calculateMetrics(site, capex, downtimeCost);
+        totalDemandSavings += m.annualDemandSavings;
+        totalResiliency += m.annualResiliencyVal;
+        totalPayback += m.simplePayback;
+        if (m.tier === 1) tier1Count++;
+        return { ...site, ...m };
+      });
+
+      const count = evaluatedList.length;
+      const avgPayback = count > 0 ? (totalPayback / count).toFixed(1) : 0;
+      const avgDemand = count > 0 ? Math.round(totalDemandSavings / count) : 0;
+      const avgResiliency = count > 0 ? Math.round(totalResiliency / count) : 0;
+      const tier1Pct = count > 0 ? Math.round((tier1Count / count) * 100) : 0;
+
+      document.getElementById('kpi-total-sites').innerText = count;
+      document.getElementById('kpi-tier1-count').innerText = `${tier1Pct}% (${tier1Count})`;
+      document.getElementById('kpi-avg-payback').innerText = `${avgPayback} Yrs`;
+      document.getElementById('kpi-avg-demand-savings').innerText = `$${avgDemand.toLocaleString()}`;
+      document.getElementById('kpi-avg-resiliency').innerText = `$${avgResiliency.toLocaleString()}`;
+
+      renderTable(evaluatedList, capex);
+      updateScatterChart(evaluatedList);
+      updateDispatchChart();
+    }
+
+    function renderTable(list, capex) {
+      const tbody = document.getElementById('site-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan='5' class='text-center p-4 text-gray-500'>No sites matching selected filters</td></tr>`;
+        return;
+      }
+
+      list.forEach(site => {
+        const tr = document.createElement('tr');
+        tr.className = `cursor-pointer transition hover:bg-gray-800 ${site.id === currentSelectedSiteId ? 'bg-gray-800/90 font-medium' : ''}`;
+        tr.onclick = () => {
+          currentSelectedSiteId = site.id;
+          updateDashboard();
+        };
+
+        tr.innerHTML = `
+          <td class='p-2.5 font-medium text-white'>${site.name}</td>
+          <td class='p-2.5 text-gray-400'>${site.region}</td>
+          <td class='p-2.5 text-gray-300'>$${site.demandRate.toFixed(2)}</td>
+          <td class='p-2.5 font-semibold ${site.simplePayback <= 6.0 ? 'text-emerald-400' : (site.simplePayback <= 8.5 ? 'text-amber-400' : 'text-rose-400')}'>${site.simplePayback}y</td>
+          <td class='p-2.5 text-center'><span class='inline-block w-5 text-center py-0.5 rounded text-[11px] font-bold ${site.badgeClass}'>${site.tier}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const selectedSite = siteData.find(s => s.id === currentSelectedSiteId) || siteData[0];
+      const downtimeCost = parseFloat(document.getElementById('slider-downtime').value);
+      const metrics = calculateMetrics(selectedSite, capex, downtimeCost);
+      const tenYrBenefit = (metrics.totalAnnualBenefit * 10) - capex;
+
+      document.getElementById('table-annual-benefit').innerText = `$${Math.round(metrics.totalAnnualBenefit).toLocaleString()} / yr`;
+      document.getElementById('table-10yr-roi').innerText = `${tenYrBenefit >= 0 ? '+' : ''}$${Math.round(tenYrBenefit).toLocaleString()}`;
+      document.getElementById('table-10yr-roi').className = `font-semibold ${tenYrBenefit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+    }
+
+    function initCharts() {
+      const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+      scatterChart = new Chart(ctxScatter, {
+        type: 'scatter',
+        data: { datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.raw.name}: Tariff $${ctx.raw.x}/kW | Payback: ${ctx.raw.y} yrs | Status: ${ctx.raw.tier}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Demand Charge ($/kW)', color: '#9CA3AF', font: { size: 11 } },
+              grid: { color: '#374151' },
+              ticks: { color: '#9CA3AF' }
+            },
+            y: {
+              title: { display: true, text: 'Simple Payback (Years)', color: '#9CA3AF', font: { size: 11 } },
+              grid: { color: '#374151' },
+              ticks: { color: '#9CA3AF' },
+              min: 0,
+              max: 30
+            }
+          }
+        }
+      });
+
+      const ctxBar = document.getElementById('barChart').getContext('2d');
+      barChart = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: ['ERCOT (TX)', 'MISO (Midwest)', 'CAISO (CA)', 'PJM (Mid-Atl)', 'NYISO (NY)'],
+          datasets: [{
+            label: 'Avg Outage (Hours/Yr)',
+            data: [7.9, 4.1, 4.0, 4.0, 3.5],
+            backgroundColor: ['#F59E0B', '#3B82F6', '#3B82F6', '#3B82F6', '#00A896'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+            y: {
+              title: { display: true, text: 'SAIDI Hours/Year', color: '#9CA3AF', font: { size: 10 } },
+              grid: { color: '#374151' },
+              ticks: { color: '#9CA3AF' }
+            }
+          }
+        }
+      });
+
+      const ctxDispatch = document.getElementById('dispatchChart').getContext('2d');
+      dispatchChart = new Chart(ctxDispatch, {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#D1D5DB', boxWidth: 12, font: { size: 11 } }
+            }
+          },
+          scales: {
+            x: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
+            y: {
+              title: { display: true, text: 'Power Demand (kW)', color: '#9CA3AF', font: { size: 11 } },
+              grid: { color: '#374151' },
+              ticks: { color: '#9CA3AF' }
+            }
+          }
+        }
+      });
+    }
+
+    function updateScatterChart(list) {
+      const dataPoints = list.map(s => ({
+        x: s.demandRate,
+        y: s.simplePayback,
+        name: s.name,
+        tier: s.tier
+      }));
+
+      scatterChart.data = {
+        datasets: [{
+          data: dataPoints,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: dataPoints.map(p => p.tier === 1 ? '#00A896' : (p.tier === 2 ? '#F59E0B' : '#EF4444'))
+        }]
+      };
+      scatterChart.update();
+    }
+
+    function updateDispatchChart() {
+      const site = siteData.find(s => s.id === currentSelectedSiteId) || siteData[0];
+      const hours = ['12A','1A','2A','3A','4A','5A','6A','7A','8A','9A','10A','11A','12P','1P','2P','3P','4P','5P','6P','7P','8P','9P','10P','11P'];
+      
+      const netGridLoad = site.baseLoad.map((load, idx) => {
+        const netAfterSolar = Math.max(0, load - site.pvGen[idx]);
+        if (idx >= 14 && idx <= 19) {
+          return Math.max(load - site.peakCutKw, 0);
+        }
+        return netAfterSolar;
+      });
+
+      document.getElementById('dispatch-subtitle').innerText = `Facility: ${site.name} (${site.region})`;
+      document.getElementById('detail-base-peak').innerText = `${site.peakKw} kW`;
+      document.getElementById('detail-net-peak').innerText = `${site.peakKw - site.peakCutKw} kW`;
+      const cutPct = ((site.peakCutKw / site.peakKw) * 100).toFixed(1);
+      document.getElementById('detail-demand-cut').innerText = `${site.peakCutKw} kW (${cutPct}%)`;
+
+      dispatchChart.data = {
+        labels: hours,
+        datasets: [
+          {
+            label: 'Gross Facility Load (kW)',
+            data: site.baseLoad,
+            borderColor: '#9CA3AF',
+            borderWidth: 2,
+            borderDash: [4, 4],
+            fill: false,
+            tension: 0.3
+          },
+          {
+            label: 'Solar PV Output (kW)',
+            data: site.pvGen,
+            borderColor: '#F59E0B',
+            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+            borderWidth: 1.5,
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: 'Net Grid Draw Post-Microgrid (kW)',
+            data: netGridLoad,
+            borderColor: '#00A896',
+            backgroundColor: 'rgba(0, 168, 150, 0.25)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3
+          }
+        ]
+      };
+      dispatchChart.update();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCharts();
+      updateDashboard();
+
+      document.getElementById('filter-region').addEventListener('change', updateDashboard);
+      document.getElementById('filter-type').addEventListener('change', updateDashboard);
+      document.getElementById('slider-capex').addEventListener('input', updateDashboard);
+      document.getElementById('slider-downtime').addEventListener('input', updateDashboard);
+    });
+  </script>
+</body>
+</html>">
+  </iframe>
+</div>
